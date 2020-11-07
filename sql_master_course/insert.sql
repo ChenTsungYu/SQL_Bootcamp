@@ -19,7 +19,7 @@ insert into Customer_table (cust_id, first_name, age, email) values (
 );
 
 -- 新增多筆資料
-insert into Customer_table values 
+insert into customer_table values 
 (4,'bee4','cee4',20,'c4@gmail.com'),
 (5,'bee5','cee5',10,'c5@gmail.com'),
 (6,'bee6','cee6',70,'c6@gmail.com'),
