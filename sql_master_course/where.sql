@@ -28,5 +28,41 @@ select first_name from customer_table where age BETWEEN 20 AND 30;
 -- 4.2
 select first_name from customer_table where age NOT BETWEEN 20 AND 30;
 
--- 4.3 資料源源自/Data/Sales.csv
+-- 4.3 
 select * from sales where ship_date BETWEEN '2015-11-01' AND '2015-12-01' ;
+
+-- 5.1  
+select * from customer where customer_name LIKE 'A%';
+
+-- 5.2
+select * from customer where customer_name LIKE '%Alan%';
+
+-- 5.3
+select * from customer where customer_name LIKE '____ %';
+
+-- 5.4
+select * from customer where customer_name LIKE '____ %';
+
+-- 5.5 找出所有非 S 開頭的城市名稱
+select distinct city from customer where city NOT LIKE 'S %';
+
+-- 6.1 
+select * from customer where state = 'California' ORDER BY customer_name  ;
+
+-- 6.2 
+select * from customer where state = 'California' ORDER BY customer_name DESC ;
+
+-- 6.3
+select * from customer ORDER BY city ASC, customer_name DESC;
+
+-- 6.4 
+select * from customer ORDER BY 2 DESC;
+
+-- 6.4 
+select * from customer ORDER BY age DESC;
+
+-- 7.1
+select * from customer where age > 30 ORDER BY age DESC LIMIT 10 ;
+
+-- 8.1
+select customer_id AS "c_id Number", customer_name AS c_name, age AS c_age from customer;

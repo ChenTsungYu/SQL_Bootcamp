@@ -138,11 +138,17 @@ copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sq
 
 範例見[where.sql](./where.sql) 4.1~4.2。
 除了以數值篩選之外，也可以用日期為篩選條件
-範例見[where.sql](./where.sql) 4.3
+範例見[where.sql](./where.sql) 4.3。[資料源](./Data/Sales.csv)
 
 ### LIKE 
 模糊查詢，可依循**特定的規則**來搜尋資料表中的特定資料。
 **特定的規則**如: 萬用字元 (SQL Wildcards)，利用萬用字元來建立一個模式 (pattern)。 [PostgreSQL 官方文件](https://docs.postgresql.tw/the-sql-language/functions-and-operators/pattern-matching#9-7-1-like)提供相當多的資訊。
+
+範例見[where.sql](./where.sql) 5.1：找出名字為 **A開頭** 的客戶。[資料源](./Data/Customer.csv)
+
+範例見[where.sql](./where.sql) 5.2：找出名字為 **Alan** 的客戶。
+
+範例見[where.sql](./where.sql) 5.3：找出名字為四個字，姓氏不拘的客戶
 
 | 萬用字元 | 解釋 | 範例
 | -------- | -------- | -------- | 
@@ -151,6 +157,39 @@ copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sq
 | [charlist]     | 匹配「一個」在列舉範圍內的字元  |  待補 |
 | [^charlist] 或 [!charlist]	     | 匹配「一個」不在列舉範圍內的字元  |   待補 | 
 
+### ORDER BY
+將取得的資料集依某個欄位來作排序，排序方法可分為: **由小到大 (ascending  又做 ASC; 預設)** ; 或**由大到小 (descending; 又做 DESC)**
+
+#### 語法結構
+- 依照單一欄位排序
+```sql
+select <column_name> from <table_name> [where <condition>] ORDER BY <column_name> [ASC, DESC];
+```
+範例見[where.sql](./where.sql) 6.1：找出 state 為 California 的所有客戶，並依照**升冪(ASC)**排列
+
+範例見[where.sql](./where.sql) 6.2：找出 state 為 California 的所有客戶，並依照**降冪(DESC)**排列
+
+- 依照多個(兩個以上)欄位排序
+```sql
+select <column_name> from <table_name> [where <condition>] ORDER BY <column_name1> [ASC, DESC] , <column_name2> [ASC, DESC];
+```
+範例見[where.sql](./where.sql) 6.3：city 依照**升冪(ASC)** customer_name 依照**降冪(DESC)**排列，找出所有客戶
+
+- 依照數值排列，前面提的數值用來表示欄位在資料表中的順序，如: 2 表示**第二個欄位**
+範例見[where.sql](./where.sql) 6.4：依照資料表中的第二個欄位做**降冪(DESC)**排列，找出所有客戶。
+
+### LIMIT 
+限制 SQL 語句影響的資料筆數
+範例見[where.sql](./where.sql) 7.1：查詢年齡大於30歲，且依照age 降冪排列，只取前10筆
+
+### AS (Alias)
+替資料表或欄位名稱取一個別名 (Alias)，好處是可將名稱複雜的SQL 語句調整成較為簡潔易讀的形式
+#### 語法結構
+```sql
+select <column_name> AS <column_alias> from <table_name>
+```
+範例見[where.sql](./where.sql) 8.1，回傳結果:
+![](./image/AS.png)
 
 ## Update
 `update` 語句用於修改資料表中的資料
