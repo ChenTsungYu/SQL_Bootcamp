@@ -106,6 +106,7 @@ copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sq
 copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sql_master_course/Data/copytext.txt' delimiter ',';
 ```
 ![](./image/COPY_msg.png)
+
 更多用法參考[官方文件](https://docs.postgresql.tw/reference/sql-commands/copy)
 
 ## 查詢(Select)
@@ -121,12 +122,35 @@ copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sq
 作為條件判斷，取出符合條件的值
 範例見[where.sql](./where.sql) 1.1 ~ 1.3
 
-## Logical Operator: 
+### Logical Operator: 
 適當搭配邏輯運算子`(AND & OR & NOT)`，可達成多個條件的查詢
 - `AND` 表示該左右兩邊的條件皆需符合才成立
 - `OR` 表示該左右兩邊的條件至少需符合一個才成立
 
 範例見[where.sql](./where.sql) 2.1 ~ 2.4
+
+### IN
+限制必需符合**某些欄位值為條件**來搜尋資料表中的特定資料
+範例見[where.sql](./where.sql) 3.1 ~ 2.4
+
+### BETWEEN
+限定某範圍內連續的值作為條件來搜尋資料表中的特定資料，可將範例[where.sql](./where.sql) 2.1 用`BETWEEN` 來進行改寫。
+
+範例見[where.sql](./where.sql) 4.1~4.2。
+除了以數值篩選之外，也可以用日期為篩選條件
+範例見[where.sql](./where.sql) 4.3
+
+### LIKE 
+模糊查詢，可依循**特定的規則**來搜尋資料表中的特定資料。
+**特定的規則**如: 萬用字元 (SQL Wildcards)，利用萬用字元來建立一個模式 (pattern)。 [PostgreSQL 官方文件](https://docs.postgresql.tw/the-sql-language/functions-and-operators/pattern-matching#9-7-1-like)提供相當多的資訊。
+
+| 萬用字元 | 解釋 | 範例
+| -------- | -------- | -------- | 
+| `%`    | 匹配零～多個字元 | `A%` 表A開頭的字串都符合這個規則; e.g. ABC、AABCC; `%A` 表A結尾的字串; `B%A` 表 B 開頭 A 結尾的字串 |  
+|  `_`  | 匹配一個字元 |  `AB_C` 表 AB 開頭 | 
+| [charlist]     | 匹配「一個」在列舉範圍內的字元  |  待補 |
+| [^charlist] 或 [!charlist]	     | 匹配「一個」不在列舉範圍內的字元  |   待補 | 
+
 
 ## Update
 `update` 語句用於修改資料表中的資料
@@ -154,6 +178,7 @@ ALTER TABLE table_name ADD <column_name> <data_type> ;
 其中`<column_name>` 替換成資料欄位名稱;  `<data_type>` 替換成該資料欄位的屬性
 [範例1.1](./alter_table.sql) : 新增名為 test_col 的欄位名稱，欄位屬性為`varchar`，長度限制為255
 ![](./image/ALTER_TABLE_ADD_col.png)
+
 - 刪除資料欄位 (Column) ，語法結構:
 ```sql
 ALTER TABLE table_name DROP column <column_name>;
@@ -176,12 +201,28 @@ ALTER TABLE table_name RENAME COLUMN <column_name_old> TO <column_name_new>;
 使用時機包含**建立資料表 (Create Table)**、**修改資料表 (Alter Table)**
 
 #### 包含的限制條件類型
-- `NOT NULL`
-- `CHECK`
+- `NOT NULL`: 資料庫預設為允許欄位為空值(`NULL`)，可透過設置限制條件，使欄位不允許為`Null`
+[範例1.6](./alter_table.sql)：`SET NOT NULL`; 對欄位名稱  `cust_id` 設定限制條件為 `NOT NULL`，表示新增資料時該欄位**一定要有值**
+[範例1.7](./alter_table.sql)：對 範例1.6 的設定條件做測試，會回傳錯誤提示`null value in column "cust_id" violates not-null constraint` 
+![](./image/ALTER_TABLE_ADD_set_not_table.png)
+
+[範例1.8](./alter_table.sql)：`DROP NOT NULL` 取消對欄位名稱  `cust_id` 設定的限制條件`NOT NULL`。執行執行成功後再重新執行一次 範例1.7 的SQL 語句即可完成新增
+- `CHECK`： 用來限制欄位中可用的值，確保該欄位中的值都會符合設定的條件
+[範例1.9](./alter_table.sql): `ADD constraint` ... `CHECK`; 限制 `customer_table` 資料表中的 `cust_id` 欄位值都**必需要大於 0**
+[範例2.1](./alter_table.sql): 對 範例1.9 的設定條件做測試，會回傳錯誤提示`new row for relation "customer_table" violates check constraint "cust_id"`
+![](./image/ALTER_TABLE_ADD_check.png)
+
+[範例2.2](./alter_table.sql): 移除 範例1.9 設定的限制
 - `UNIQUE`
-- `PRIMARY KEY`
-- `FOREIGN KEY`
-- `DEFAULT`
+- `PRIMARY KEY`：設定`PRIMARY KEY (主鍵)` 的欄位確保在資料表中的唯一性，`PRIMARY KEY`欄位中的每一筆資料在資料表中都必需是**唯一**
+[範例2.3](./alter_table.sql): 將 `cust_id` 設為`RIMARY KEY`
+- `FOREIGN KEY`: `FOREIGN KEY(外鍵)`為一個 (or 多個) 指向其它資料表中主鍵的欄位，欄位限制的值只能是源自另一張資料表的主鍵。
+語法結構:
+```sql
+ALTER TABLE <table_name>
+ADD FOREIGN KEY <foreign_key_name> REFERENCES <table_name>(<primary_key_name>);
+```
+- `DEFAULT`： 用來設定欄位的預設值
 
 
 ### 注意 ： 
@@ -191,6 +232,10 @@ Sample:
 ALTER TABLE customer_table DROP column IF EXISTS test_col ;
 ```
 
+# Convertion Functions
+## Numbers / Date => String
+
+## String => Numbers / Date
 
 
 
