@@ -158,25 +158,25 @@ copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sq
 | [^charlist] 或 [!charlist]	     | 匹配「一個」不在列舉範圍內的字元  |   待補 | 
 
 ### ORDER BY
-將取得的資料集依某個欄位來作排序，排序方法可分為: **由小到大 (ascending  又做 ASC; 預設)** ; 或**由大到小 (descending; 又做 DESC)**
+將取得的資料集依某個欄位來作排序，排序方法可分為: **由小到大 (ascending  又做 ASC; 預設)** ; 或 **由大到小 (descending; 又做 DESC)**
 
 #### 語法結構
 - 依照單一欄位排序
 ```sql
 select <column_name> from <table_name> [where <condition>] ORDER BY <column_name> [ASC, DESC];
 ```
-範例見[where.sql](./where.sql) 6.1：找出 state 為 California 的所有客戶，並依照**升冪(ASC)**排列
+範例見[where.sql](./where.sql) 6.1：找出 state 為 California 的所有客戶，並依照 **升冪(ASC)** 排列
 
-範例見[where.sql](./where.sql) 6.2：找出 state 為 California 的所有客戶，並依照**降冪(DESC)**排列
+範例見[where.sql](./where.sql) 6.2：找出 state 為 California 的所有客戶，並依照 **降冪(DESC)** 排列
 
 - 依照多個(兩個以上)欄位排序
 ```sql
 select <column_name> from <table_name> [where <condition>] ORDER BY <column_name1> [ASC, DESC] , <column_name2> [ASC, DESC];
 ```
-範例見[where.sql](./where.sql) 6.3：city 依照**升冪(ASC)** customer_name 依照**降冪(DESC)**排列，找出所有客戶
+範例見[where.sql](./where.sql) 6.3：city 依照 **升冪(ASC)** customer_name 依照 **降冪(DESC)** 排列，找出所有客戶
 
-- 依照數值排列，前面提的數值用來表示欄位在資料表中的順序，如: 2 表示**第二個欄位**
-範例見[where.sql](./where.sql) 6.4：依照資料表中的第二個欄位做**降冪(DESC)**排列，找出所有客戶。
+- 依照數值排列，前面提的數值用來表示欄位在資料表中的順序，如: 2 表示 **第二個欄位** 
+範例見[where.sql](./where.sql) 6.4：依照資料表中的第二個欄位做 **降冪(DESC)** 排列，找出所有客戶。
 
 ### LIMIT 
 限制 SQL 語句影響的資料筆數
@@ -271,10 +271,81 @@ Sample:
 ALTER TABLE customer_table DROP column IF EXISTS test_col ;
 ```
 
-# Convertion Functions
-## Numbers / Date => String
+# SQL Functions
+SQL 有幾種重要的內建函數。範例資料源: [Sales](./Data/Sales.csv)、[Customer](./Data/Customer.csv)
+## Aggregate Functions
+為聚合函數，其中包括
+### COUNT()
+`COUNT()`: 計算與查詢條件相符的資料共有幾筆。
+#### 語法結構:
+```sql
+select COUNT(<column_name>) from <table_name>;
+```
+- [範例1.1](./aggregate.sql): 計算資料表 Sales 內共有幾筆資料
+- [範例1.2](./aggregate.sql): 找出資料表 Sales 內的客戶 ID 為 **CG-12520** ，計算 **order_line** 及不相同的**order_id**兩個欄位的資料筆數，並給予別名
 
-## String => Numbers / Date
+### SUM()
+計算一數值欄位的總和
+#### 語法結構:
+```sql
+select SUM(<column_name>) from <table_name>;
+```
+- [範例2.1](./aggregate.sql): 資料表 Sales 內 Profit 欄位的所有資料進行加總
+![](./image/sum_func.png)
+- [範例2.2](./aggregate.sql): 選出資料表 Sales 內所有 
+product_id 為 **FUR-CH-10000454**的資料， 對 **quantity** 欄位進行加總
+
+### AVG()
+計算某個欄位的平均值
+#### 語法結構:
+```sql
+select AVG(<column_name>) from <table_name>;
+```
+- [範例3.1](./aggregate.sql): 計算資料表 Customer 內的客戶平均年齡
+- [範例3.2](./aggregate.sql): 可以`AVG()`函數內做乘除
+
+### MIN() & MAX()
+取得特定欄位中的最小值&最大值
+#### 語法結構:
+```sql
+select MIN(<column_name>) from <table_name>;
+select MAX(<column_name>) from <table_name>;
+```
+- [範例4.1](./aggregate.sql): 找出資料表 Sales 內的2015年6月的最低銷售額，可執行下方指令查詢 sales 欄位的所有值，並依小到大排序來檢查。
+```sql
+select sales as "Minimum sales in June 2015" from sales where order_date between '2015-06-01' and '2015-06-30' order by sales;
+```
+- [範例4.2](./aggregate.sql): 找出資料表 Sales 內的2015年6月的最低銷售額，可執行下方指令查詢 sales 欄位的所有值，並依小到大排序來檢查。
+```sql
+select sales as "Minimum sales in June 2015" from sales where order_date between '2015-06-01' and '2015-06-30' order by sales desc;
+```
+
+## String Functions
+字串函數
+### LENGTH()
+取得字串長度
+#### 語法結構:
+```sql
+SELECT LENGTH(<column_name>) FROM <table_name>;
+```
+- [範例5.1](./aggregate.sql): 計算顧客名字的長度
+![](./image/string_length.png)
+
+###  UPPER() & LOWER()
+將英文字母轉換為大寫 & 小寫
+```sql
+SELECT UPPER(<column_name>) FROM <table_name>;
+SELECT LOWER(<column_name>) FROM <table_name>;
+```
+- [範例6.1](./aggregate.sql): 轉換顧客名字為全大寫及全小寫
+
+## Mathematical Functions
+數值函數
+
+## Convertion Functions
+### Numbers / Date => String
+
+### String => Numbers / Date
 
 
 
