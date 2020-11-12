@@ -23,11 +23,4 @@ select MIN(sales) as "Minimum sales in June 2015" from sales where order_date be
 -- 4.2
 select MAX(sales) as "Maximum sales in June 2015" from sales where order_date between '2015-06-01' and '2015-06-30';
 
--- 5.1
-select customer_name, LENGTH(customer_name) as characters_num from customer;
-
--- 6.1
-select customer_name, UPPER(customer_name) as upper_characters, LOWER(customer_name) as lower_characters from customer;
-
--- 7.1
 

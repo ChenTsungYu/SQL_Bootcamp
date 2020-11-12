@@ -328,7 +328,7 @@ select sales as "Minimum sales in June 2015" from sales where order_date between
 ```sql
 SELECT LENGTH(<column_name>) FROM <table_name>;
 ```
-- [範例5.1](./aggregate.sql): 計算顧客名字的長度
+- [範例1.1](./string_function.sql): 計算顧客名字的長度
 ![](./image/string_length.png)
 
 ###  UPPER() & LOWER()
@@ -337,10 +337,68 @@ SELECT LENGTH(<column_name>) FROM <table_name>;
 SELECT UPPER(<column_name>) FROM <table_name>;
 SELECT LOWER(<column_name>) FROM <table_name>;
 ```
-- [範例6.1](./aggregate.sql): 轉換顧客名字為全大寫及全小寫
+- [範例2.1](./string_function.sql): 轉換顧客名字為全大寫及全小寫
+
+### REPLACE()
+以新字串取代原字串內容。
+>  **注意：**  REPLACE() 是大小寫敏感的
+
+#### 語法結構:
+```sql
+SELECT REPLACE(str, from_str, to_str) FROM <table_name>;
+```
+- [範例3.1](./string_function.sql): 篩選出國家為美國的顧客，並將國家名稱替換成縮寫
+
+### TRIM(), RTRIM(), LTRIM()
+用於刪除字串的字首 (leading) 或字尾 (trailing) 的空白字元 (whitespace)
+#### 語法結構:
+```sql
+TRIM( [{ LEADING | TRAILING | BOTH }] [ trim_character ] FROM string)
+
+TRIM( [remstr FROM] string )
+
+RTRIM( string, trim_character )
+
+LTRIM( string, trim_character )
+```
+- [範例4.1](./string_function.sql): 刪除文字左方的空格，同範例 4.5
+![](./image/trim().png)
+- [範例4.2](./string_function.sql): 刪除文字右方的空格，同範例 4.4
+- [範例4.3](./string_function.sql): 刪除文字兩邊的空格
+
+### CONCAT
+合併多個欄位的值
+#### 語法結構:
+```sql
+string1 ||  string2 || stringN.... ;
+```
+- [範例5.1](./string_function.sql): 將 city, state, country  合併成新的欄位名稱 address
+![](./image/concat_str.png)
+
+###  SUBSTRING()
+取出特定的字串
+#### 語法結構:
+```sql
+SUBSTRING( string [ from start_position ] [for length ] );
+```
+`start_position`: 表初始位置，若不填，則預設為**1**
+`length`: 取出的長度
+- [範例6.1](./string_function.sql): 取出 **customer_id** 前兩個字為 **AB** 的資料，並提取 **customer_id** 前兩個字為新欄位 **customer_num** 的資料
+![](./image/substr6-1.png)
+- [範例6.2](./string_function.sql): 取出 **customer_id** 前兩個字為 **AB** 的資料，並提取 **customer_id** `第4個`字開始，`長度為五`的字串，為新欄位 **customer_num** 的資料，可與範例 6.1 做對比
+![](./image/substr6-2.png)
+### string_agg()
+直接把表達式變字串
+#### 語法結構:
+```sql
+string_agg(expression, delimiter);
+```
+- [範例7.1](./string_function.sql): 情境：同一筆訂單下可能包含不同的商品，若要查詢同一個訂單下的所有商品，並將其合併起來，變成新的欄位。
+![](./image/string_agg.png)
 
 ## Mathematical Functions
 數值函數
+
 
 ## Convertion Functions
 ### Numbers / Date => String
