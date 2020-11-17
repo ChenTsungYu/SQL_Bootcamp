@@ -68,6 +68,7 @@ pg_size_pretty
  8097 kB
 ```
 ###  一起查看資料庫大小&名稱
+```sql
 select datname as db_name
      , pg_size_pretty(
        pg_database_size(
@@ -76,7 +77,7 @@ select datname as db_name
  where datname 
    not in ('postgres', 'template0', 'template1')
  order by datname;
-
+```
 ## 列出設定檔位置
 ```sql
 show config_file;
@@ -241,12 +242,14 @@ ALTER TABLE table_name RENAME COLUMN <column_name_old> TO <column_name_new>;
 
 #### 包含的限制條件類型
 - `NOT NULL`: 資料庫預設為允許欄位為空值(`NULL`)，可透過設置限制條件，使欄位不允許為`Null`
+
 [範例1.6](./alter_table.sql)：`SET NOT NULL`; 對欄位名稱  `cust_id` 設定限制條件為 `NOT NULL`，表示新增資料時該欄位**一定要有值**
 [範例1.7](./alter_table.sql)：對 範例1.6 的設定條件做測試，會回傳錯誤提示`null value in column "cust_id" violates not-null constraint` 
 ![](./image/ALTER_TABLE_ADD_set_not_table.png)
 
 [範例1.8](./alter_table.sql)：`DROP NOT NULL` 取消對欄位名稱  `cust_id` 設定的限制條件`NOT NULL`。執行執行成功後再重新執行一次 範例1.7 的SQL 語句即可完成新增
 - `CHECK`： 用來限制欄位中可用的值，確保該欄位中的值都會符合設定的條件
+
 [範例1.9](./alter_table.sql): `ADD constraint` ... `CHECK`; 限制 `customer_table` 資料表中的 `cust_id` 欄位值都**必需要大於 0**
 [範例2.1](./alter_table.sql): 對 範例1.9 的設定條件做測試，會回傳錯誤提示`new row for relation "customer_table" violates check constraint "cust_id"`
 ![](./image/ALTER_TABLE_ADD_check.png)
@@ -254,6 +257,7 @@ ALTER TABLE table_name RENAME COLUMN <column_name_old> TO <column_name_new>;
 [範例2.2](./alter_table.sql): 移除 範例1.9 設定的限制
 - `UNIQUE`
 - `PRIMARY KEY`：設定`PRIMARY KEY (主鍵)` 的欄位確保在資料表中的唯一性，`PRIMARY KEY`欄位中的每一筆資料在資料表中都必需是**唯一**
+
 [範例2.3](./alter_table.sql): 將 `cust_id` 設為`RIMARY KEY`
 - `FOREIGN KEY`: `FOREIGN KEY(外鍵)`為一個 (or 多個) 指向其它資料表中主鍵的欄位，欄位限制的值只能是源自另一張資料表的主鍵。
 語法結構:
@@ -400,10 +404,173 @@ string_agg(expression, delimiter);
 數值函數
 
 
-## Convertion Functions
-### Numbers / Date => String
 
-### String => Numbers / Date
+# 其他
+## Group by
+搭配聚合函數 (Aggregate Functions)。
+> 使用時機: 篩選不只一個欄位，其中至少一個欄位有包含函數的運用時，就需要用到 `GROUP BY`。
+
+即除了包括函數的欄位外，都需要將其放在 GROUP BY 的子句中。
+### 語法結構:
+```sql
+SELECT column_names, agg_function(column_name)
+FROM table_name
+GROUP BY column_names
+```
+> column_name 可以多個，不過 GROUP BY 子句後面就要填相對應得column_name
+
+e.g. 
+```sql
+SELECT column_name1, column_name2, column_name3, agg_function(column_name) FROM table_name GROUP BY column_name1, column_name2, column_name3
+```
+- [範例1.1](./groupby.sql): 查詢客戶的所在區域及計算各區域的顧客數量
+- [範例1.2](./groupby.sql): 查詢各個產品的銷售數量
+- [範例1.3](./groupby.sql): 查詢各個客戶的消費總額、平均消費額、最低(高)消費額
+
+## Having
+由於 `WHERE` 子句無法對聚合函數做條件限制，所以需要 `HAVING` 對 **聚合函數 (Aggregate)** 做條件查詢
+```sql
+SELECT column_names, agg_function(column_name)
+FROM table_name
+[WHERE Conditions]
+GROUP BY column_names
+HAVING agg_function(column_name) ;
+```
+> [WHERE Condition] 為非必要的條件
+
+- [範例1.1](./having.sql): 找出客戶數量大於200的地區
+- [範例1.2](./having.sql): 找出客戶數量大於100，且年齡大於40歲的地區
+
+## CASE 
+用於邏輯判斷，類似 if/then/else 條件判斷
+### 語法結構:
+```sql
+CASE
+  WHEN condition THEN result
+  [WHEN···]
+  [ELSE result]
+END;
+```
+or
+```sql
+CASE expression
+  WHEN value THEN result
+  [WHEN···]
+  [ELSE result]
+END;
+```
+- [範例1.1](./case.sql): 新增欄位，設置條件判斷顧客年齡位於哪個區間範圍
+![](./image/case.png)
+
+## JOIN
+`JOIN` 又作合併查詢。因資料庫的設計方式，會將原始資料拆成多張表，再透過外鍵進行關聯，若想查詢儲存在不同資料表的欄位資料，就需透過 JOIN 整合多張表，組成一張作為查詢用途的暫時性資料表，不影響原始資料表的結構及資料。
+
+JOIN 的種類:
+### INNER JOIN 內部合併查詢
+![](./image/inner_join_demo.png)
+如上圖可知，`INNER JOIN` 為在兩張表之間取**交集**，只會合併Table A 和 Table B 中能夠**匹配到的 row**，其他 row 都不會被保留下來。
+#### 語法結構:
+```sql
+SELECT tableA.column1, tableB.column2...
+FROM tableA
+INNER JOIN tableB
+ON tableA.pk_a=tableB.fk_a;
+```
+上述語法結構，tableA 為**主要Table**，相同名稱的欄位透過 table_name.column 這種寫法來做區分，若無重複的欄位名稱時可不用。
+
+- [範例1.1](./join.sql): 取出 sales 表中的 `order_line`, `product_id`, `customer_id`, `sale`，以及 customer 表中的 `customer_name`, `age`。 PostgreSQL 會先搜尋  TableB 來是否有 row 符合 `a.customer_id=b.customer_id`。 如果找到的話，它會合併這倆 row 中的 columns。
+![](./image/inner_join.png)
+
+### LEFT (OUTER) JOIN 左(外部)合併查詢
+![](./image/left_join_demo.png)
+如上圖可知，`LEFT JOIN` 是取 Table A (左) 的所有資料，即便Table B (右)中的共同欄位沒有符合的值也一樣會被取出。
+#### 語法結構:
+```sql
+SELECT tableA.column1, tableB.column2...
+FROM tableA
+LEFT [OUTER] JOIN tableB 
+ON tableA.pk_a = tableB.fk_a;
+```
+其中`[OUTER]`可省略。
+- [範例2.1](./join.sql): 將[範例1.1](./join.sql) 改為`LEFT  JOIN`
+
+### RIGHT (OUTER) JOIN 右(外部)合併查詢
+![](./image/right_join_demo.png)
+如上圖可知，`RIGHT JOIN` 是取 Table B (右) 的所有資料，即便Table A (左)中的共同欄位沒有符合的值也一樣會被取出。
+#### 語法結構:
+```sql
+SELECT tableA.column1, tableB.column2...
+FROM tableA
+RIGHT [OUTER] JOIN tableB 
+ON tableA.pk_a = tableB.fk_a;
+```
+其中`[OUTER]`可省略。
+- [範例3.1](./join.sql): 將[範例2.1](./join.sql) 改為`RIGHT  JOIN`
+
+### FULL (OUTER) JOIN 完全(外部)合併查詢
+![](./image/full_join_demo.png)
+如上圖可知，`FULL JOIN` 是取 Table A 、 Table B  的所有資料，即便兩者共同欄位沒有符合的值也一樣會被取出。
+#### 語法結構:
+```sql
+SELECT tableA.column1, tableB.column2...
+FROM tableA
+FULL [OUTER] JOIN tableB 
+ON tableA.pk_a = tableB.fk_a;
+```
+其中`[OUTER]`可省略。
+- [範例4.1](./join.sql): 將[範例3.1](./join.sql) 改為`FULL  JOIN`
+
+### CROSS JOIN 交叉合併查詢
+將兩張資料表中所有的可能組合列出來，不必指定任何條件。
+> 注意： 當有 **WHERE、ON、USING** 條件時不建議使用 `CROSS JOIN`
+
+#### 語法結構:
+```sql
+SELECT tableA.column1, tableB.column2...
+FROM tableA, tableB...;
+```
+- [範例5.1](./join.sql)
+
+### EXCEPT 差集
+![](./image/EXCEPT.png)
+為取 Table A 、 Table B 之**差集**
+#### 語法結構:
+```sql
+SELECT column1, column2...
+FROM tableA
+[WHERE Conditions]
+EXCEPT
+SELECT column1, column2...
+FROM tableB
+[WHERE Conditions];
+```
+- [範例6.1](./join.sql)
+
+### UNION
+將兩個以上(包含兩個) SQL 查詢的結果合併成一個，而且只會**回傳不同值的資料**，類似`DISTINCT`。
+> 使用時機：
+>通常是有兩個結構很相似的 table，但並沒有完全一樣
+
+**注意：**
+1. 兩個 查詢語句 回傳的欄位需要是**相同的資料型別及數量**（數量必須相同但欄位的值不須一定相同）。
+2. `UNION` 會把所有重複的 rows 移除，除非使用的是 UNION ALL。
+
+#### 語法結構:
+```sql
+SELECT column1, column2...
+FROM tableA
+[WHERE Conditions]
+UNION
+SELECT column1, column2...
+FROM tableB
+[WHERE Conditions];
+```
+- [範例7.1](./join.sql)
+
+# Convertion Functions
+## Numbers / Date => String
+
+## String => Numbers / Date
 
 
 
