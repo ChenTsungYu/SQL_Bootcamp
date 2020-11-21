@@ -110,7 +110,7 @@ copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sq
 
 更多用法參考[官方文件](https://docs.postgresql.tw/reference/sql-commands/copy)
 
-## 查詢(Select)
+## 查詢 (Select)
 見[select.sql](./select.sql)
 
 ### Distinct
@@ -192,14 +192,14 @@ select <column_name> AS <column_alias> from <table_name>
 範例見[where.sql](./where.sql) 8.1，回傳結果:
 ![](./image/AS.png)
 
-## Update
+## 更新 (Update)
 `update` 語句用於修改資料表中的資料
 範例見[update.sql](./update.sql) 1.1 ~ 1.2
-## Delete
+## 刪除 (Delete)
 `delete` 語句用於刪除資料表中的資料
 範例見[delete.sql](./delete.sql) 1.1 ~ 1.3
 
-## ALTER
+## ALTER (修改 -> 資料表)
 `ALTER`  用來修改**已存在**的資料表（Table）結構
 語句型式：
 ```sql
@@ -402,8 +402,26 @@ string_agg(expression, delimiter);
 
 ## Mathematical Functions
 數值函數
+### CEIL()、FLOOR()
+`CEIL()`對數值做無條件進位; `FLOOR()`對數值做無條件捨棄; 
+- [範例1.1](./mathematical.sql): 對銷售額做無條件進位/捨棄
 
+### ROUND()
+對數值進行四捨五入計算
+#### 語法結構:
+```sql
+SELECT ROUND(column, decimals) FROM table_name;
+```
+上述的語法結構裡，`decimals` 用來設定四捨五入到小數點第幾位，預設**0 表示個位數**。
+- [範例1.2](./mathematical.sql): 對銷售額做無條件進位/捨棄
 
+### POWER()
+用來計算 N 次方的值，回傳計算結果
+#### 語法結構:
+```sql
+SELECT POWER(column, N) FROM table_name;
+```
+- [範例1.3](./mathematical.sql): 計算客戶的年齡平方
 
 # 其他
 ## Group by
@@ -594,6 +612,141 @@ FROM table2
 - [範例1.1](./subqueries.sql)：位在`WHERE` 子句中的子查詢; 查詢 sales table 中的所有資料，其中查詢的資料需限制在客戶年齡低於 20 歲的 customer id 
 - [範例1.2](./subqueries.sql)：位在`FROM` 子句中的子查詢; 
 - [範例1.3](./subqueries.sql)：位在`SELECT` 子句中的子查詢; 
+
+# View (檢視表，或稱視圖)
+View 是由 SQL 查詢動態組合生成(由查詢得到的結果組合而成資料表)的**虛擬資料表**，實際上資料庫裡是不存在這一張資料表，但實際資料表的 SQL 查詢語句都能在 View 操作。
+
+建立 View 有幾個好處:
+- 將實體資料表結構隱藏起來，非直接讓使用者訪問整個實體表，只允許透過 View 訪問資料（檢視表是唯讀的），作為一種安全機制
+- 經常查詢的子句，可以藉由 View 來保存，每次訪問相同的記錄只需要查詢 View 表的內容即可
+- 簡化查詢複雜度
+
+## 建立 View
+### 語法結構:
+```sql
+CREATE [OR REPLACE] VIEW view_name as 
+SELECT columns
+FROM tables
+[WHERE Conditions]
+```
+- [範例1.1](./view.sql)：建立一個名為 logistics 的虛擬資料表，並將查詢語句返回的結果存在這張資料表裡面，接著對這張表作查詢。
+
+如果要更新或替換(`OR REPLAC`)現有檢視，可以刪除該檢視並建立新檢視
+- [範例1.2](./view.sql)
+
+## 刪除 View
+```sql
+DROP VIEW view_name; 
+```
+[範例1.3](./view.sql)
+
+## 更新 View
+並非所有 View 都是可更新的，有些限制要注意，如包含下方內容的 View 即無法做更新操作:
+- `DISTINCT` ，` GROUP BY` 或 `HAVING` 子句
+- 聚合函式，如 `AVG()`、`COUNT()`、`SUM()` 、`MIN()`、`MAX()` 等等。
+- `UNION`、`UNION ALL`、 `CROSSJOIN`、`EXCEPT` 或 INTERSECT 運算子。
+- `WHERE` 子句中的子查詢，位在 `FROM` 子句中的表。
+
+# INDEX 索引
+`INDEX` 為改善查詢效率的一種方法。試想，若一本書有索引的話，可以幫助自己更快找到目標資料。同理，資料庫
+內若資料表中沒有索引，查詢時需先把整張資料表掃過一遍(全表掃描)，再慢慢去找資料。
+
+> **適當**建立索引，有助於改善查詢效能
+
+## 建立 Index
+### 語法結構
+- 單一欄位的 Index
+```sql
+CREATE INDEX index_name ON table_name (column);
+```
+ [範例1.1](./index.sql)
+
+- 多重欄位的 Index
+```sql
+CREATE INDEX index_name ON table_name (column1, column2, column3...);
+```
+ [範例1.2](./index.sql)
+使用時機: 常對一張資料表查詢使用`WHERE`時，如 `WHERE column1='aaa' AND column2='bbb'`，可對 column1、column2 建立共同索引。
+
+預設情況下，Index 允許重複，若要修改為只允許唯一 Index，可在`CREATE` 後面加上 `UNIQUE`
+```sql
+CREATE UNIQUE INDEX index_name ON table_name (column);
+```
+
+## 建 Index (索引)的注意事項
+大多數資料庫系統會自動為主鍵 (`PRIMARY KEY`) 和 `UNIQUE` 欄位建立索引。每次在表中新增，更新或刪除行時，都必須更動該表上的所有 Index， Index 建越多，Server 需要執行的工作就越多，最終導致效能降低，應謹慎評估建立 Index。
+### 一些建 Index 基本原則:
+- 經常用於查詢資料的 Index
+- 欄位順序很重要
+- Index 盡可能選擇資料型別為 **Integer** 的欄位
+- 用於 `JOIN` 的 Index，以提高 `JOIN` 效能。
+
+### 一些情況需要思考是否真的需要建 Index
+- 資料量較小的表
+- 該欄位頻繁且大量被更新或新增
+- 避免使用包含太多 `NULL` 值的欄位
+
+## 修改 Index
+```sql
+ALTER [IF EXISTS] INDEX index_name, RENAME TO new_index_name ;
+```
+- [範例1.3](./index.sql)
+
+## 刪除 INDEX
+### 語法結構
+```sql
+DROP [IF EXISTS] INDEX index_name [CASCADE | RESTRICT];
+```
+上述語法結構中，`CASCADE`表該 Index 被刪除時，與該 Index 相依的物件也會被刪除
+- [範例1.4](./index.sql)
+
+# 時間/日期 (Time/Date)
+多數資料庫系統皆有提供時間、日期相關的函數，更多關於時間日期的用法參考[官方手冊](https://docs.postgresql.tw/the-sql-language/data-types/date-time)
+## CURRENT_DATE
+用於取得當前日期，日期結構為`YYYY-MM-DD`
+### 語法結構
+```sql
+SELECT CURRENT_DATE;
+```
+## CURRENT_TIME
+用於取得當前的時間(依照當地時區)，時間結構為`HH:MM:SS.GTM+TZ`
+### 語法結構
+```sql
+SELECT CURRENT_TIME([precision]);
+```
+`([precision])` 表精確的位數，`precision` 若填 1 表精確到小數點後第一位，**其餘為 0**
+## CURRENT_TIMESTAMP
+用於取得當前的時間(依照當地時區)，時間結構為`YYYY-MM-DD HH:MM:SS.GTM+TZ`
+### 語法結構
+```sql
+SELECT CURRENT_TIMESTAMP;
+```
+`([precision])` 表精確的位數，`precision` 若填 1 表精確到小數點後第一位，**其餘為 0**
+## 綜合範例
+將上述時間、日期函數進行實作，得到回傳結果如下
+![](./image/datetime_func.png)
+
+## AGE()
+用於計算兩個日期間隔多少時間
+### 語法結構
+```sql
+SELECT AGE([date1,]date2);
+```
+若沒有給定`date1`的話，預設為**當前日期**。
+範例： 查詢 sales 表中的訂單日期及運送日期，並計算訂單日期及運送日期兩者所花費的時間(`time_taken`)
+```sql
+select order_line, order_date, ship_date, AGE(ship_date, order_date) as time_taken from sales;
+```
+## EXTRACT()
+取出日期和時間中特定的部分，e.g. 年、月、日、時、分、秒
+### 語法結構
+```sql
+SELECT (unit FROM datetime);
+```
+`unit`表單位，可參考[圖表](./image/EXTRACT_UNIT.png)
+- [範例1.1](./datetime.sql): 計算本月至目前所花費天數
+- [範例1.2](./datetime.sql): 計算本日至目前所花費小時
+- [範例1.3](./datetime.sql): 計算訂單日至運算日所花費的秒數
 
 # Convertion Functions
 ## Numbers / Date => String
