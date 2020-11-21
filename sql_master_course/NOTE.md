@@ -132,7 +132,7 @@ copy customer_table from '/Users/tsungyuchen/Desktop/programming/SQL_Bootcamp/sq
 
 ### IN
 限制必需符合**某些欄位值為條件**來搜尋資料表中的特定資料
-範例見[where.sql](./where.sql) 3.1 ~ 2.4
+範例見[where.sql](./where.sql) 3.1 ~ 3.4
 
 ### BETWEEN
 限定某範圍內連續的值作為條件來搜尋資料表中的特定資料，可將範例[where.sql](./where.sql) 2.1 用`BETWEEN` 來進行改寫。
@@ -468,6 +468,7 @@ END;
 JOIN 的種類:
 ### INNER JOIN 內部合併查詢
 ![](./image/inner_join_demo.png)
+
 如上圖可知，`INNER JOIN` 為在兩張表之間取**交集**，只會合併Table A 和 Table B 中能夠**匹配到的 row**，其他 row 都不會被保留下來。
 #### 語法結構:
 ```sql
@@ -483,6 +484,7 @@ ON tableA.pk_a=tableB.fk_a;
 
 ### LEFT (OUTER) JOIN 左(外部)合併查詢
 ![](./image/left_join_demo.png)
+
 如上圖可知，`LEFT JOIN` 是取 Table A (左) 的所有資料，即便Table B (右)中的共同欄位沒有符合的值也一樣會被取出。
 #### 語法結構:
 ```sql
@@ -566,6 +568,32 @@ FROM tableB
 [WHERE Conditions];
 ```
 - [範例7.1](./join.sql)
+
+# Subqueries 子查詢
+進行多資料表查詢，除了使用 `join` 外，亦可使用 SQL 子查詢。
+若將一個 SQL 語句塞入另一個 SQL 語句中，該SQL 語句即為子查詢，可用來連接資料表，可位在 `Where`、`FROM`、`SELECT`子句，可以透過子查詢取得查詢條件。
+
+## 子查詢要點：
+- 每一個子查詢都是一個 `Select` 指令，必須用**小括號**包起來，能對不同資料表做查詢
+- 如果 SQL 查詢語句內有子查詢，**優先處理子查詢條件**，再依子查詢取得的條件值來處理主查詢。
+- 若要對查詢結果進行排序，子查詢**不能使用** `ORDER BY`，只能使用 `GROUP BY` 子句。
+- 若子查詢取得多筆資料，在主查詢需使用 `IN` 邏輯運算子
+- 子查詢 `SELECT` 只會取得**單一欄位**的值，除非多個
+ row 在主查詢(Main query)中，供子查詢比較其所選的 row
+ - `BETWEEN` 運算不能與子查詢一起使用，但可在**子查詢中**使用。
+
+### 語法結構:
+```sql
+SELECT column1, column2...
+FROM table1
+[WHERE Conditions]
+(SELECT column3...
+FROM table2
+[WHERE Conditions])
+```
+- [範例1.1](./subqueries.sql)：位在`WHERE` 子句中的子查詢; 查詢 sales table 中的所有資料，其中查詢的資料需限制在客戶年齡低於 20 歲的 customer id 
+- [範例1.2](./subqueries.sql)：位在`FROM` 子句中的子查詢; 
+- [範例1.3](./subqueries.sql)：位在`SELECT` 子句中的子查詢; 
 
 # Convertion Functions
 ## Numbers / Date => String
